@@ -14,11 +14,11 @@ typedef struct BMPHeader
     unsigned    int             mImgWidth;
     unsigned    int             mImgHeight;
 
-    unsigned    short   int     mPlanNr;
+    unsigned    short   int     mPlansNr;
     unsigned    short   int     mBitsXPixel;
 
     unsigned    int             mCompression;
-    unsigned    int             mFileSize;
+    unsigned    int             mImageSize;
 
     unsigned    int             mHResolution;
     unsigned    int             mVResolution;
