@@ -2,11 +2,11 @@
 
 BMPReader::BMPReader(const std::string &fPath)
 {
-    std::FILE *pFile = NULL;
+	std::FILE *pFile = NULL;
 	std::memset(&this->mBMPHeader, 0, sizeof(BMPHeader));
-
+	
 	fopen_s(&pFile, fPath.c_str(), "rb");
-    if(pFile == NULL) return;
+	if(pFile == NULL) return;
 
     std::fread(&this->mBMPHeader.mBMPType, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mBMPType), pFile);
     std::fread(&this->mBMPHeader.mFileSize, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mFileSize), pFile);
@@ -39,18 +39,18 @@ BMPReader::BMPReader(const std::string &fPath)
 	}
     
 	unsigned int mallocSize = this->mBMPHeader.mImgHeight * this->mBMPHeader.mImgWidth * 3;
-	this->mColors = (BYTE *) malloc (mallocSize * sizeof(BYTE));
+	this->mPixels = (unsigned char *) malloc (mallocSize * sizeof(unsigned char));
 
 	std::fseek(pFile, this->mBMPHeader.mDataOffset, SEEK_SET);
-	std::fread(this->mColors,  (size_t) 1, (size_t) mallocSize, pFile);
+	std::fread(this->mPixels,  (size_t) 1, (size_t) mallocSize, pFile);
 
 	std::fclose(pFile);
 }
 
 BMPReader::~BMPReader(void)
 {
-	delete(this->mColors);
-	this->mColors = NULL;
+	delete(this->mPixels);
+	this->mPixels = NULL;
 }
 
 void BMPReader::showHeader(void)
@@ -74,7 +74,7 @@ void BMPReader::showHeader(void)
 
 void BMPReader::seveFile(const std::string &fPath)
 {
-	printf("Writting file in progress...\n");
+	printf("Writting file...\t");
     std::FILE *pFile = NULL;
 
 	fopen_s(&pFile, fPath.c_str(), "wb");
@@ -107,23 +107,39 @@ void BMPReader::seveFile(const std::string &fPath)
 	unsigned int ws = this->mBMPHeader.mImgHeight * this->mBMPHeader.mImgWidth * 3;
 	
 	std::fseek(pFile, this->mBMPHeader.mDataOffset, SEEK_SET);
-	std::fwrite(this->mColors, (size_t) ws, (size_t) 1, pFile);
+	std::fwrite(this->mPixels, (size_t) ws, (size_t) 1, pFile);
 
 	std::fclose(pFile);
-	printf("Writting file in done...\n\n");
+	printf("done!\n\n");
 }
 
-void BMPReader::negative(void)
+void BMPReader::toNegative(void)
 {
-	printf("Negative in progress...\n");
-	unsigned int colorsSize = this->mBMPHeader.mImgHeight * this->mBMPHeader.mImgWidth * 3;
+	printf("Converting to negative...\t");
+	unsigned int nPixels = this->mBMPHeader.mImgHeight * this->mBMPHeader.mImgWidth * 3;
 
-	for(BYTE *p = this->mColors; p < this->mColors + colorsSize; p += 3)
+	for(unsigned char *p = this->mPixels; p < this->mPixels + nPixels; p += 3)
 	{
 		*(p + 0) = 255 - *(p + 0);
 		*(p + 1) = 255 - *(p + 1);
 		*(p + 2) = 255 - *(p + 2);
 	}
 
-	printf("Negative in done...\n\n");
+	printf("done!\n\n");
+}
+
+void BMPReader::toGray(void)
+{
+	printf("Converting to gray...\t");
+	unsigned int nPixels = this->mBMPHeader.mImgHeight * this->mBMPHeader.mImgWidth * 3;
+
+	for(unsigned char *p = this->mPixels; p < this->mPixels + nPixels; p += 3)
+	{
+		unsigned char g = (unsigned char) ((*(p + 0)) * 0.3 + (*(p + 1)) * 0.59 + (*(p + 2)) * 0.11);
+		*(p + 0) = g;
+		*(p + 1) = g;
+		*(p + 2) = g;
+	}
+
+	printf("done!\n\n");
 }
