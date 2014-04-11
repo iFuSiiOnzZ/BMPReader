@@ -13,13 +13,15 @@
 class BMPReader
 {
     private:
-        std::vector<RGBHeader>  mColors;
-        std::string             mFileName;
-        BMPHeader               mBMPHeader;
+        BYTE		  *mColors;
+        BMPHeader      mBMPHeader;
 
     public:
         BMPReader           (const std::string &);
         ~BMPReader          (void);
 
         void    showHeader  (void);
+		void	negative	(void);
+		
+		void	seveFile	(const std::string &);
 };
