@@ -43,10 +43,10 @@ class BMPReader
     public:
         BMPReader           (const std::string &);
         ~BMPReader          (void);
-
+        
         void    showHeader  (void);
-		void	toNegative	(void);
-		void	toGray		(void);
-		
-		void	seveFile	(const std::string &);
+        void	toNegative	(void);
+        void	toGray		(void);
+        
+        void	seveFile	(const std::string &);
 };
