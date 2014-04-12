@@ -7,6 +7,8 @@
 #include <string>
 #include <cstring>
 
+#define CLAMP(x)  (((x) > (255)) ? (255) : (((x) < (0)) ? (0) : (x)))
+
 typedef struct BMPHeader
 {
     unsigned    short   int     mBMPType;
@@ -44,9 +46,10 @@ class BMPReader
         BMPReader           (const std::string &);
         ~BMPReader          (void);
         
-        void    showHeader  (void);
-        void	toNegative	(void);
-        void	toGray		(void);
+        void    addBrightness   (int);
+        void    showHeader      (void);
+        void	toNegative	    (void);
+        void	toGray		    (void);
         
         void	seveFile	(const std::string &);
 };

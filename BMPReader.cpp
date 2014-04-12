@@ -111,6 +111,21 @@ void BMPReader::seveFile(const std::string &fPath)
     printf("done!\n\n");
 }
 
+void BMPReader::addBrightness(int b)
+{
+    printf("Adding brightness...\t");
+    unsigned int nPixels = this->mBMPHeader.mImgHeight * this->mBMPHeader.mImgWidth * 3;
+    
+    for(unsigned char *p = this->mPixels; p < this->mPixels + nPixels; p += 3)
+    {
+        *(p + 0) = CLAMP(*(p + 0) + b);
+        *(p + 1) = CLAMP(*(p + 1) + b);
+        *(p + 2) = CLAMP(*(p + 2) + b);
+    }
+    
+    printf("done!\n\n");
+}
+
 void BMPReader::toNegative(void)
 {
     printf("Converting to negative...\t");
