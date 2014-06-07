@@ -46,6 +46,7 @@ class BMPReader
         BMPReader           (const std::string &);
         ~BMPReader          (void);
         
+        void    resize          (int, int);
         void    addBrightness   (int);
         void    showHeader      (void);
         void	toNegative	    (void);

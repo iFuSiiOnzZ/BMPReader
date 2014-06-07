@@ -156,3 +156,35 @@ void BMPReader::toGray(void)
     
     printf("done!\n\n");
 }
+
+void BMPReader::resize(int nWidth, int nHeight)
+{
+    printf("Rescaling image...\t");
+
+    unsigned int mallocSize = nHeight * nWidth * 3;
+    unsigned char *newSize = (unsigned char *) malloc (mallocSize * sizeof(unsigned char));
+
+    float sy = (float) nHeight / (float) this->mBMPHeader.mImgHeight;
+    float sx = (float) nWidth / (float) this->mBMPHeader.mImgWidth;
+
+    for(int cy = 0; cy < nHeight; cy++) for(int cx = 0; cx < nWidth; cx++)
+    {
+        int p = cy * nWidth * 3 + cx * 3;
+        int m = ((int) (cy / sy) * this->mBMPHeader.mImgWidth * 3) + ((int) (cx / sx) * 3);
+
+        *(newSize + p + 0) = *(this->mPixels + m + 0);
+        *(newSize + p + 1) = *(this->mPixels + m + 1);
+        *(newSize + p + 2) = *(this->mPixels + m + 2);
+    }
+
+    free(this->mPixels); this->mPixels = newSize;
+
+    this->mBMPHeader.mImgWidth = nWidth;
+    this->mBMPHeader.mImgHeight = nHeight;
+
+    this->mBMPHeader.mImageSize = mallocSize;
+    this->mBMPHeader.mFileSize = this->mBMPHeader.mHeaderSize + mallocSize;
+   
+    printf("Done!\n\n");
+}
+ 
