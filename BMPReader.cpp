@@ -173,15 +173,24 @@ void BMPReader::setAngle(float angle)
     printf("Rotating image...\t");
 
     angle = angle * 3.141562f / 180.0f;
-    int nWidth = (int) std::ceilf(std::cosf(angle) * this->mBMPHeader.mImgWidth + std::sinf(angle) * this->mBMPHeader.mImgHeight);
-    int nHeight = (int) std::ceilf(std::cosf(angle) * this->mBMPHeader.mImgHeight + std::sinf(angle) * this->mBMPHeader.mImgWidth);
-
-    unsigned int mallocSize = nHeight * nWidth * 3;
-    unsigned char *newImg = (unsigned char *) malloc (mallocSize * sizeof(unsigned char));
-
-    float tx = nWidth / 2.0f; float ty = nHeight / 2.0f;
-    memset(newImg, 0, mallocSize * sizeof(unsigned char));
+    //int nWidth = (int) abs(std::floor(std::cosf(angle) * this->mBMPHeader.mImgWidth + std::sinf(angle) * this->mBMPHeader.mImgHeight));
+    //int nHeight = (int) abs(std::floor(std::cosf(angle) * this->mBMPHeader.mImgHeight + std::sinf(angle) * this->mBMPHeader.mImgWidth));
     
+    //float tx = this->mBMPHeader.mImgWidth / 2.0f; 
+    //float ty = this->mBMPHeader.mImgHeight / 2.0f;
+
+    int nWidth = (int) this->mBMPHeader.mImgWidth;
+    int nHeight = (int) this->mBMPHeader.mImgHeight;
+
+    float tx = nWidth / 2.0f; 
+    float ty = nHeight / 2.0f;
+
+    unsigned int padding = (4 - ((nWidth * 3) % 4)) % 4;
+    unsigned int mallocSize = nHeight * nWidth * 3 + padding * nWidth;
+
+    unsigned char *newImg = (unsigned char *) malloc (mallocSize * sizeof(unsigned char));
+    memset(newImg, 0, mallocSize * sizeof(unsigned char));
+
     for(int cy = 0; cy < nHeight; cy++) for(int cx = 0; cx < nWidth; cx++)
     {
         int x = (int) (((cx - tx) * std::cosf(-angle) - (cy - ty) * std::sinf(-angle)) + tx);
@@ -202,7 +211,7 @@ void BMPReader::setAngle(float angle)
     this->mBMPHeader.mImgWidth = nWidth;
     this->mBMPHeader.mImgHeight = nHeight;
 
-    this->mBMPHeader.mImageSize = mallocSize;
+    this->mBMPHeader.mImageSize = nWidth * nHeight * 3;
     this->mBMPHeader.mFileSize = sizeof(BMPHeader) + mallocSize;
 
      printf("done!\n\n");
@@ -235,7 +244,7 @@ void BMPReader::setSize(int nWidth, int nHeight)
     this->mBMPHeader.mImgWidth = nWidth;
     this->mBMPHeader.mImgHeight = nHeight;
 
-    this->mBMPHeader.mImageSize  = mallocSize;
+    this->mBMPHeader.mImageSize  = nWidth * nHeight * 3;
     this->mBMPHeader.mFileSize   = sizeof(BMPHeader) + mallocSize;
    
     printf("Done!\n\n");
