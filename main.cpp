@@ -11,6 +11,7 @@
 #define BMP_TOGRAY      (1 << 4)
 #define BMP_OUTPUT      (1 << 5)
 #define BMP_ANGLE       (1 << 6)
+#define BMP_SOBEL       (1 << 7)
 
 #define SET_BIT(var, bit)   ((var) |= (bit))
 #define IS_SET(var, bit)    ((var) & (bit))
@@ -27,8 +28,9 @@ struct ARGS
 
 void help(void)
 {
-    std::printf("programName -i imputFile.bmp -o outFile.bmp [-toGray] [-toNegative] [-showHeader] [-addBrightness intValue] [-resize intWidth intHeight] [-help]\n\n");
+    std::printf("programName -i imputFile.bmp -o outFile.bmp [-sobel filter {0 - 255}] [-toGray] [-toNegative] [-showHeader] [-addBrightness intValue] [-resize intWidth intHeight] [-help]\n\n");
     std::printf("\t [-help] - Shows what you are reading\n");
+    std::printf("\t [-sobel] - Sobel filter for edge detection");
     std::printf("\t [-toGray] - Converts the image to gray scale\n");
     std::printf("\t [-setSize] - Rescale the image to the new size\n");
     std::printf("\t [-toNegative] - Converts the image to negative\n");
@@ -43,13 +45,17 @@ int main(int argc, char *argv[])
 
     int brightness = 0;
     int sx = 0, sy = 0;
+
+    float sobel = 0.0f;
     float angle = 0.0f;
-    
-    for(int i = 0;  i < argc; i++)
-    { 
+
+    for(int i = 1; i < argc; i++)
+    {
         if(!std::strcmp(argv[i], "-i")){ args.fInputPath.assign(argv[i + 1]);  }
         else if(!std::strcmp(argv[i], "-o")){ SET_BIT(args.whatToDo, BMP_OUTPUT); args.fOutputPath.assign(argv[i + 1]);  }
-        
+
+        else if(!std::strcmp(argv[i], "-sobel")){ SET_BIT(args.whatToDo, BMP_SOBEL); SET_BIT(args.whatToDo, BMP_TOGRAY); sobel = (float) atof(argv[i + 1]); }
+
         else if(!std::strcmp(argv[i], "-help")){ help(); exit(EXIT_SUCCESS); }
         else if(!std::strcmp(argv[i], "-showHeader")){ SET_BIT(args.whatToDo, BMP_SHOWHEADER); }
 
@@ -72,7 +78,8 @@ int main(int argc, char *argv[])
     if(IS_SET(args.whatToDo, BMP_ANGLE))      bmpReader.setAngle(angle);
     if(IS_SET(args.whatToDo, BMP_RESIZE))     bmpReader.setSize(sx,sy);
 
-    if(IS_SET(args.whatToDo, BMP_OUTPUT))     bmpReader.seveFile(args.fOutputPath);
+    if(IS_SET(args.whatToDo, BMP_SOBEL))	  bmpReader.sobelFilter(sobel);
+    if(IS_SET(args.whatToDo, BMP_OUTPUT))     bmpReader.saveFile(args.fOutputPath);
 
     return(EXIT_SUCCESS);
 }

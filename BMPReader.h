@@ -1,13 +1,7 @@
 #pragma once
 
-#include <cstdio>
-#include <vector>
-
 #include <cmath>
 #include <string>
-#include <cstring>
-
-#define CLAMP(x)  (((x) > (255)) ? (255) : (((x) < (0)) ? (0) : (x)))
 
 typedef struct BMPHeader
 {
@@ -34,7 +28,7 @@ typedef struct BMPHeader
 
     unsigned    int             mNumberOfColors;            /* Number of colors used */
     unsigned    int             mNumberOfImportantColors;   /* Number of important colors */
-}BMPHeader;
+} BMPHeader;
 
 class BMPReader
 {
@@ -45,14 +39,15 @@ class BMPReader
     public:
         BMPReader           (const std::string &);
         ~BMPReader          (void);
-        
+
         void    setSize         (int, int);
         void    setAngle        (float);
-        void    addBrightness   (int);  
+        void    addBrightness   (int);
 
         void    showHeader      (void);
         void	toNegative	    (void);
         void	toGray		    (void);
-        
-        void	seveFile	    (const std::string &);
+
+        void	saveFile	    (const std::string &);
+        void    sobelFilter     (float);
 };
