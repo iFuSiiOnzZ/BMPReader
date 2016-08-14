@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <string>
-#include <cstdlib>
 
 #include "./BMPReader.h"
 
@@ -19,28 +18,40 @@
 #define REMOVE_BIT(var, bit)    ((var) &= ~(bit))
 #define TOGLE_BIT(var, bit)     ((var) ^= (bit))
 
-struct ARGS
+typedef struct args_t
 {
     unsigned int whatToDo;
     std::string fInputPath;
     std::string fOutputPath;
-};
+} args_t;
 
 void help(void)
 {
-    std::printf("programName -i imputFile.bmp -o outFile.bmp [-sobel filter {0 - 255}] [-toGray] [-toNegative] [-showHeader] [-addBrightness intValue] [-resize intWidth intHeight] [-help]\n\n");
-    std::printf("\t [-help] - Shows what you are reading\n");
-    std::printf("\t [-sobel] - Sobel filter for edge detection");
-    std::printf("\t [-toGray] - Converts the image to gray scale\n");
-    std::printf("\t [-setSize] - Rescale the image to the new size\n");
-    std::printf("\t [-toNegative] - Converts the image to negative\n");
-    std::printf("\t [-showHeader] - Shows the image header information\n");
-    std::printf("\t [-addBrightness] - Changes the brightness of the image\n");
+    printf("programName -i imputFile.bmp -o outFile.bmp [-rotate floatAngle] [-toSobel floatThreshold] [-toGray] [-toNegative] [-showHeader] [-addBrightness intValue] [-resize intWidth intHeight] [-help]\n\n");
+    printf("\t [-help] - Shows what you are reading\n");
+
+    printf("\t [-toSobel] - Sobel filter for edge detection\n");
+    printf("\t\t floatThreshold: if it is 0 (zero) output fill not be filtered else it will use the value as a threshold\n");
+
+    printf("\t [-toGray] - Convert the image to gray scale\n");
+
+    printf("\t [-rotate] - Rotate the image by a given angle (canvas no resized)\n");
+    printf("\t\t floatAngle: rotation angle in degrees\n");
+
+    printf("\t [-resize] - Rescale the image to the new size\n");
+    printf("\t\t intHeight: height of the new image\n");
+    printf("\t\t intWidth: width of the new image\n");
+
+    printf("\t [-toNegative] - Convert the image to negative\n");
+    printf("\t [-showHeader] - Shows the image header information\n");
+
+    printf("\t [-addBrightness] - Change the brightness of the image\n");
+    printf("\t\t intValue: increases the brightness by the input value\n");
 }
 
 int main(int argc, char *argv[])
 {
-    struct ARGS args;
+    args_t args;
     args.whatToDo = 0;
 
     int brightness = 0;
@@ -54,7 +65,7 @@ int main(int argc, char *argv[])
         if(!std::strcmp(argv[i], "-i")){ args.fInputPath.assign(argv[i + 1]);  }
         else if(!std::strcmp(argv[i], "-o")){ SET_BIT(args.whatToDo, BMP_OUTPUT); args.fOutputPath.assign(argv[i + 1]);  }
 
-        else if(!std::strcmp(argv[i], "-sobel")){ SET_BIT(args.whatToDo, BMP_SOBEL); SET_BIT(args.whatToDo, BMP_TOGRAY); sobel = (float) atof(argv[i + 1]); }
+        else if(!std::strcmp(argv[i], "-toSobel")){ SET_BIT(args.whatToDo, BMP_SOBEL); SET_BIT(args.whatToDo, BMP_TOGRAY); sobel = (float) atof(argv[i + 1]); }
 
         else if(!std::strcmp(argv[i], "-help")){ help(); exit(EXIT_SUCCESS); }
         else if(!std::strcmp(argv[i], "-showHeader")){ SET_BIT(args.whatToDo, BMP_SHOWHEADER); }
@@ -63,8 +74,14 @@ int main(int argc, char *argv[])
         else if(!std::strcmp(argv[i], "-toNegative")){ SET_BIT(args.whatToDo, BMP_TONEGATIVE); }
         else if(!std::strcmp(argv[i], "-addBrightness")){ SET_BIT(args.whatToDo, BMP_Brightness); brightness = std::atoi(argv[i + 1]); }
 
-        else if(!std::strcmp(argv[i], "-setAngle")){ SET_BIT(args.whatToDo, BMP_ANGLE); angle = (float) std::atof(argv[i + 1]); }
-        else if(!std::strcmp(argv[i], "-setSize")){ SET_BIT(args.whatToDo, BMP_RESIZE); sx = std::atoi(argv[i + 1]); sy = std::atoi(argv[i + 2]); }
+        else if(!std::strcmp(argv[i], "-rotate")){ SET_BIT(args.whatToDo, BMP_ANGLE); angle = (float) std::atof(argv[i + 1]); }
+        else if(!std::strcmp(argv[i], "-resize")){ SET_BIT(args.whatToDo, BMP_RESIZE); sx = std::atoi(argv[i + 1]); sy = std::atoi(argv[i + 2]); }
+    }
+
+    if(!args.fInputPath.size())
+    {
+        help();
+        return EXIT_FAILURE;
     }
 
     BMPReader bmpReader(args.fInputPath);

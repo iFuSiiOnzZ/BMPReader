@@ -310,9 +310,9 @@ void BMPReader::sobelFilter(float filter)
 
             float v = sqrtf((float)(Gx * Gx + Gy * Gy)) ;
 
-            newImg[r * nWidth * 3 + c * 3 + 0] = v > filter ? 255 : 0;
-            newImg[r * nWidth * 3 + c * 3 + 1] = v > filter ? 255 : 0;
-            newImg[r * nWidth * 3 + c * 3 + 2] = v > filter ? 255 : 0;
+            newImg[r * nWidth * 3 + c * 3 + 0] = filter >= 1.0f ? (v > filter ? 255 : 0) : CLAMP((int) v);
+            newImg[r * nWidth * 3 + c * 3 + 1] = filter >= 1.0f ? (v > filter ? 255 : 0) : CLAMP((int) v);
+            newImg[r * nWidth * 3 + c * 3 + 2] = filter >= 1.0f ? (v > filter ? 255 : 0) : CLAMP((int) v);
         }
     }
 
