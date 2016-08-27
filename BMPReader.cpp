@@ -1,4 +1,5 @@
 #include "BMPReader.h"
+#include <cmath>
 
 #define CLAMP(x)  (((x) > (255)) ? (255) : (((x) < (0)) ? (0) : (x)))
 #define SOBEL_KERNEL 3
@@ -9,30 +10,7 @@ BMPReader::BMPReader(const std::string &fPath)
     std::memset(&this->mBMPHeader, 0, sizeof(BMPHeader));
 
     if(fopen_s(&pFile, fPath.c_str(), "rb") != 0) return;
-
-    std::fread(&this->mBMPHeader.mBMPType, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mBMPType), pFile);
-    std::fread(&this->mBMPHeader.mFileSize, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mFileSize), pFile);
-
-    std::fread(&this->mBMPHeader.mReserved1, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mReserved1), pFile);
-    std::fread(&this->mBMPHeader.mReserved2, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mReserved2), pFile);
-
-    std::fread(&this->mBMPHeader.mDataOffset, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mDataOffset), pFile);
-    std::fread(&this->mBMPHeader.mHeaderSize, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mHeaderSize), pFile);
-
-    std::fread(&this->mBMPHeader.mImgWidth, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mImgWidth), pFile);
-    std::fread(&this->mBMPHeader.mImgHeight, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mImgHeight), pFile);
-
-    std::fread(&this->mBMPHeader.mPlansNr, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mPlansNr), pFile);
-    std::fread(&this->mBMPHeader.mBitsXPixel, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mBitsXPixel), pFile);
-
-    std::fread(&this->mBMPHeader.mCompression, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mCompression), pFile);
-    std::fread(&this->mBMPHeader.mImageSize, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mImageSize), pFile);
-
-    std::fread(&this->mBMPHeader.mHResolution, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mHResolution), pFile);
-    std::fread(&this->mBMPHeader.mVResolution, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mVResolution), pFile);
-
-    std::fread(&this->mBMPHeader.mNumberOfColors, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mNumberOfColors), pFile);
-    std::fread(&this->mBMPHeader.mNumberOfImportantColors, (size_t) 1, (size_t) sizeof(this->mBMPHeader.mNumberOfImportantColors), pFile);
+    std::fread(&this->mBMPHeader, (size_t)1, (size_t) sizeof(BMPHeader), pFile);
 
     if(this->mBMPHeader.mBitsXPixel != 24)
     {
@@ -87,30 +65,7 @@ void BMPReader::saveFile(const std::string &fPath)
     std::FILE *pFile = NULL;
 
     if(fopen_s(&pFile, fPath.c_str(), "wb") != 0) return;
-
-    std::fwrite(&this->mBMPHeader.mBMPType, (size_t) sizeof(this->mBMPHeader.mBMPType), (size_t) 1, pFile);
-    std::fwrite(&this->mBMPHeader.mFileSize, (size_t) sizeof(this->mBMPHeader.mFileSize), (size_t) 1, pFile);
-
-    std::fwrite(&this->mBMPHeader.mReserved1, (size_t) sizeof(this->mBMPHeader.mReserved1), (size_t) 1, pFile);
-    std::fwrite(&this->mBMPHeader.mReserved2, (size_t) sizeof(this->mBMPHeader.mReserved2), (size_t) 1, pFile);
-
-    std::fwrite(&this->mBMPHeader.mDataOffset, (size_t) sizeof(this->mBMPHeader.mDataOffset), (size_t) 1, pFile);
-    std::fwrite(&this->mBMPHeader.mHeaderSize, (size_t) sizeof(this->mBMPHeader.mHeaderSize), (size_t) 1, pFile);
-
-    std::fwrite(&this->mBMPHeader.mImgWidth, (size_t) sizeof(this->mBMPHeader.mImgWidth), (size_t) 1, pFile);
-    std::fwrite(&this->mBMPHeader.mImgHeight, (size_t) sizeof(this->mBMPHeader.mImgHeight), (size_t) 1, pFile);
-
-    std::fwrite(&this->mBMPHeader.mPlansNr, (size_t) sizeof(this->mBMPHeader.mPlansNr), (size_t) 1, pFile);
-    std::fwrite(&this->mBMPHeader.mBitsXPixel, (size_t) sizeof(this->mBMPHeader.mBitsXPixel), (size_t) 1, pFile);
-
-    std::fwrite(&this->mBMPHeader.mCompression, (size_t) sizeof(this->mBMPHeader.mCompression), (size_t) 1, pFile);
-    std::fwrite(&this->mBMPHeader.mImageSize, (size_t) sizeof(this->mBMPHeader.mImageSize), (size_t) 1, pFile);
-
-    std::fwrite(&this->mBMPHeader.mHResolution, (size_t) sizeof(this->mBMPHeader.mHResolution), (size_t) 1, pFile);
-    std::fwrite(&this->mBMPHeader.mVResolution, (size_t) sizeof(this->mBMPHeader.mVResolution), (size_t) 1, pFile);
-
-    std::fwrite(&this->mBMPHeader.mNumberOfColors, (size_t) sizeof(this->mBMPHeader.mNumberOfColors), (size_t) 1, pFile);
-    std::fwrite(&this->mBMPHeader.mNumberOfImportantColors, (size_t) sizeof(this->mBMPHeader.mNumberOfImportantColors), (size_t) 1, pFile);
+    std::fwrite(&this->mBMPHeader, (size_t)1, (size_t) sizeof(BMPHeader), pFile);
 
     unsigned int padding = (4 - ((this->mBMPHeader.mImgWidth * 3) % 4)) % 4;
     std::fseek(pFile, this->mBMPHeader.mDataOffset, SEEK_SET);

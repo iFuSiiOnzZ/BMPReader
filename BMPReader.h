@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cmath>
 #include <string>
 
+#pragma pack(push, 1)
 typedef struct BMPHeader
 {
     unsigned    short   int     mBMPType;                   /* Magic number for file */
@@ -29,6 +29,7 @@ typedef struct BMPHeader
     unsigned    int             mNumberOfColors;            /* Number of colors used */
     unsigned    int             mNumberOfImportantColors;   /* Number of important colors */
 } BMPHeader;
+#pragma pack(pop)
 
 class BMPReader
 {
