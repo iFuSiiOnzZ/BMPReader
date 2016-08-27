@@ -1,9 +1,7 @@
-#include <cstdio>
-#include <string>
-
+#include <stdio.h>
 #include "./BMPReader.h"
 
-#define BMP_Brightness  (1 << 0)
+#define BMP_BRIGHTNESS  (1 << 0)
 #define BMP_SHOWHEADER  (1 << 1)
 #define BMP_TONEGATIVE  (1 << 2)
 #define BMP_RESIZE      (1 << 3)
@@ -70,22 +68,22 @@ int main(int argc, char *argv[])
 
     for(int i = 1; i < argc; i++)
     {
-        if(!std::strcmp(argv[i], "-i")){ args.fInputPath.assign(argv[i + 1]);  }
-        else if(!std::strcmp(argv[i], "-o")){ SET_BIT(args.whatToDo, BMP_OUTPUT); args.fOutputPath.assign(argv[i + 1]);  }
+        if(!strcmp(argv[i], "-i")){ args.fInputPath.assign(argv[i + 1]);  }
+        else if(!strcmp(argv[i], "-o")){ SET_BIT(args.whatToDo, BMP_OUTPUT); args.fOutputPath.assign(argv[i + 1]);  }
 
-        else if(!std::strcmp(argv[i], "-toSobel")){ SET_BIT(args.whatToDo, BMP_SOBEL); SET_BIT(args.whatToDo, BMP_TOGRAY); sobel = (float) atof(argv[i + 1]); }
-        else if(!std::strcmp(argv[i], "-toBlur")) { SET_BIT(args.whatToDo, BMP_BLUR); blur = atoi(argv[i + 1]); sigma = (float) atof(argv[i + 2]);
+        else if(!strcmp(argv[i], "-toSobel")){ SET_BIT(args.whatToDo, BMP_SOBEL); SET_BIT(args.whatToDo, BMP_TOGRAY); sobel = (float) atof(argv[i + 1]); }
+        else if(!strcmp(argv[i], "-toBlur")) { SET_BIT(args.whatToDo, BMP_BLUR); blur = atoi(argv[i + 1]); sigma = (float) atof(argv[i + 2]);
         }
 
-        else if(!std::strcmp(argv[i], "-help")){ help(); exit(EXIT_SUCCESS); }
-        else if(!std::strcmp(argv[i], "-showHeader")){ SET_BIT(args.whatToDo, BMP_SHOWHEADER); }
+        else if(!strcmp(argv[i], "-help")){ help(); exit(EXIT_SUCCESS); }
+        else if(!strcmp(argv[i], "-showHeader")){ SET_BIT(args.whatToDo, BMP_SHOWHEADER); }
 
-        else if(!std::strcmp(argv[i], "-toGray")){ SET_BIT(args.whatToDo, BMP_TOGRAY); }
-        else if(!std::strcmp(argv[i], "-toNegative")){ SET_BIT(args.whatToDo, BMP_TONEGATIVE); }
-        else if(!std::strcmp(argv[i], "-addBrightness")){ SET_BIT(args.whatToDo, BMP_Brightness); brightness = std::atoi(argv[i + 1]); }
+        else if(!strcmp(argv[i], "-toGray")){ SET_BIT(args.whatToDo, BMP_TOGRAY); }
+        else if(!strcmp(argv[i], "-toNegative")){ SET_BIT(args.whatToDo, BMP_TONEGATIVE); }
+        else if(!strcmp(argv[i], "-addBrightness")){ SET_BIT(args.whatToDo, BMP_BRIGHTNESS); brightness = atoi(argv[i + 1]); }
 
-        else if(!std::strcmp(argv[i], "-rotate")){ SET_BIT(args.whatToDo, BMP_ANGLE); angle = (float) std::atof(argv[i + 1]); }
-        else if(!std::strcmp(argv[i], "-resize")){ SET_BIT(args.whatToDo, BMP_RESIZE); sx = std::atoi(argv[i + 1]); sy = std::atoi(argv[i + 2]); }
+        else if(!strcmp(argv[i], "-rotate")){ SET_BIT(args.whatToDo, BMP_ANGLE); angle = (float) atof(argv[i + 1]); }
+        else if(!strcmp(argv[i], "-resize")){ SET_BIT(args.whatToDo, BMP_RESIZE); sx = atoi(argv[i + 1]); sy = atoi(argv[i + 2]); }
     }
 
     if(!args.fInputPath.size())
@@ -96,7 +94,7 @@ int main(int argc, char *argv[])
 
     BMPReader bmpReader(args.fInputPath);
 
-    if(IS_SET(args.whatToDo, BMP_Brightness)) bmpReader.addBrightness(brightness);
+    if(IS_SET(args.whatToDo, BMP_BRIGHTNESS)) bmpReader.addBrightness(brightness);
     if(IS_SET(args.whatToDo, BMP_SHOWHEADER)) bmpReader.showHeader();
 
     if(IS_SET(args.whatToDo, BMP_TONEGATIVE)) bmpReader.toNegative();
