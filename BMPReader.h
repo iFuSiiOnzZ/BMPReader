@@ -46,9 +46,10 @@ class BMPReader
         void    addBrightness   (int);
 
         void    showHeader      (void);
-        void	toNegative	    (void);
-        void	toGray		    (void);
+        void    toNegative	    (void);
+        void    toGray		    (void);
 
-        void	saveFile	    (const std::string &);
+        void    saveFile	    (const std::string &);
+        void    blurFilter      (int, float);
         void    sobelFilter     (float);
 };

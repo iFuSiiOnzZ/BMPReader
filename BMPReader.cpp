@@ -275,3 +275,104 @@ void BMPReader::sobelFilter(float filter)
     this->mPixels = newImg;
     printf("done\n");
 }
+
+
+static int Blur(unsigned char *pImage, unsigned int R, unsigned int C, unsigned int Width, float K[3][3])
+{
+    unsigned char * p01 = pImage + Width * (R - 1) * 3 + C * 3;
+    unsigned char * p00 = p01 - 3;
+    unsigned char * p02 = p01 + 3;
+
+    unsigned char * p11 = pImage + Width * (R + 0) * 3 + C * 3;
+    unsigned char * p10 = p11 - 3;
+    unsigned char * p12 = p10 + 3;
+
+    unsigned char * p21 = pImage + Width * (R + 1) * 3 + C * 3;
+    unsigned char * p20 = p21 - 3;
+    unsigned char * p22 = p21 + 3;
+
+    float p0 = *p00 * K[0][0] + *p01 * K[0][1] + *p02 * K[0][2];
+    float p1 = *p10 * K[1][0] + *p11 * K[1][1] + *p12 * K[1][2];
+    float p2 = *p20 * K[2][0] + *p21 * K[2][1] + *p22 * K[2][2];
+
+    float p = p0 + p1 + p2;
+    return (int) (p + 0.5f);
+}
+
+static float Gaussin1D(int x, float s)
+{
+    float exp = ((x * x) / (2.0f * s * s));
+    float bse = ((1.0f) / std::sqrtf(2.0f * 3.141592f * s * s));
+
+    return bse * std::expf(exp);
+}
+
+static float Gaussin2D(int x, int y, float s)
+{
+    float exp = ((x * x + y * y) / (2.0f * s * s));
+    float bse = ((1.0f) / std::sqrtf(2.0f * 3.141592f * s * s));
+
+    return bse * std::expf(-exp);
+}
+
+void BMPReader::blurFilter(int nPass, float sigma)
+{
+    printf("Blur filter...\t");
+    unsigned int nWidth = this->mBMPHeader.mImgWidth;
+    unsigned int nHeight = this->mBMPHeader.mImgHeight;
+
+    unsigned int padding = (4 - ((nWidth * 3) % 4)) % 4;
+    unsigned int mallocSize = nHeight * nWidth * 3 + padding * nHeight;
+
+    unsigned char *newImg = (unsigned char *)malloc(mallocSize * sizeof(unsigned char));
+    memset(newImg, 0, mallocSize);
+
+    float K[3][3] =
+    {
+        { Gaussin2D(1, 1, sigma), Gaussin2D(1, 1, sigma), Gaussin2D(1, 1, sigma) },
+        { Gaussin2D(1, 1, sigma), Gaussin2D(2, 2, sigma), Gaussin2D(1, 1, sigma) },
+        { Gaussin2D(1, 1, sigma), Gaussin2D(1, 1, sigma), Gaussin2D(1, 1, sigma) },
+    };
+
+    /*float K[3][3] =
+    {
+        { Gaussin1D(1, sigma), Gaussin1D(1, sigma), Gaussin1D(1, sigma) },
+        { Gaussin1D(1, sigma), Gaussin1D(2, sigma), Gaussin1D(1, sigma) },
+        { Gaussin1D(1, sigma), Gaussin1D(1, sigma), Gaussin1D(1, sigma) },
+    };*/
+
+    float kT = 0.0f;
+    for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) kT += K[i][j];
+    for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) K[i][j] /= kT;
+
+    unsigned char *pBlurArr[2] =
+    {
+        (nPass % 2) == 0 ? this->mPixels : newImg,
+        (nPass % 2) == 0 ? newImg : this->mPixels
+    };
+
+    while (nPass > 0)
+    {
+        size_t ReadFrom = (nPass - 0) % 2;
+        size_t WriteTo = (nPass - 1) % 2;
+        --nPass;
+
+        for (unsigned int r = 1; r < nHeight - 1; ++r)
+        {
+            for (unsigned int c = 1; c < nWidth - 1; ++c)
+            {
+                int v0 = Blur(pBlurArr[ReadFrom] + 0, r, c, nWidth, K);
+                int v1 = Blur(pBlurArr[ReadFrom] + 1, r, c, nWidth, K);
+                int v2 = Blur(pBlurArr[ReadFrom] + 2, r, c, nWidth, K);
+
+                pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 0] = CLAMP((int)v0);
+                pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 1] = CLAMP((int)v1);
+                pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 2] = CLAMP((int)v2);
+            }
+        }
+    }
+
+    free(this->mPixels);
+    this->mPixels = newImg;
+    printf("done\n");
+}

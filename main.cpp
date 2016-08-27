@@ -11,6 +11,7 @@
 #define BMP_OUTPUT      (1 << 5)
 #define BMP_ANGLE       (1 << 6)
 #define BMP_SOBEL       (1 << 7)
+#define BMP_BLUR        (1 << 8)
 
 #define SET_BIT(var, bit)   ((var) |= (bit))
 #define IS_SET(var, bit)    ((var) & (bit))
@@ -27,11 +28,15 @@ typedef struct args_t
 
 void help(void)
 {
-    printf("programName -i imputFile.bmp -o outFile.bmp [-rotate floatAngle] [-toSobel floatThreshold] [-toGray] [-toNegative] [-showHeader] [-addBrightness intValue] [-resize intWidth intHeight] [-help]\n\n");
+    printf("programName -i imputFile.bmp -o outFile.bmp [-rotate floatAngle] [-toBlur intPasses floatSigma] [-toSobel floatThreshold] [-toGray] [-toNegative] [-showHeader] [-addBrightness intValue] [-resize intWidth intHeight] [-help]\n\n");
     printf("\t [-help] - Shows what you are reading\n");
 
     printf("\t [-toSobel] - Sobel filter for edge detection\n");
-    printf("\t\t floatThreshold: if it is 0 (zero) output fill not be filtered else it will use the value as a threshold\n");
+    printf("\t\t floatThreshold: number of passes to do\n");
+
+    printf("\t [-toBlur] - Gausian Blur using a 3x3 kernel\n");
+    printf("\t\t intPasses: Number of passes\n");
+    printf("\t\t sigma: sigma value\n");
 
     printf("\t [-toGray] - Convert the image to gray scale\n");
 
@@ -57,6 +62,9 @@ int main(int argc, char *argv[])
     int brightness = 0;
     int sx = 0, sy = 0;
 
+    int   blur  =    1;
+    float sigma = 1.0f;
+
     float sobel = 0.0f;
     float angle = 0.0f;
 
@@ -66,6 +74,8 @@ int main(int argc, char *argv[])
         else if(!std::strcmp(argv[i], "-o")){ SET_BIT(args.whatToDo, BMP_OUTPUT); args.fOutputPath.assign(argv[i + 1]);  }
 
         else if(!std::strcmp(argv[i], "-toSobel")){ SET_BIT(args.whatToDo, BMP_SOBEL); SET_BIT(args.whatToDo, BMP_TOGRAY); sobel = (float) atof(argv[i + 1]); }
+        else if(!std::strcmp(argv[i], "-toBlur")) { SET_BIT(args.whatToDo, BMP_BLUR); blur = atoi(argv[i + 1]); sigma = (float) atof(argv[i + 2]);
+        }
 
         else if(!std::strcmp(argv[i], "-help")){ help(); exit(EXIT_SUCCESS); }
         else if(!std::strcmp(argv[i], "-showHeader")){ SET_BIT(args.whatToDo, BMP_SHOWHEADER); }
@@ -95,7 +105,8 @@ int main(int argc, char *argv[])
     if(IS_SET(args.whatToDo, BMP_ANGLE))      bmpReader.setAngle(angle);
     if(IS_SET(args.whatToDo, BMP_RESIZE))     bmpReader.setSize(sx,sy);
 
-    if(IS_SET(args.whatToDo, BMP_SOBEL))	  bmpReader.sobelFilter(sobel);
+    if(IS_SET(args.whatToDo, BMP_BLUR))       bmpReader.blurFilter(blur, sigma);
+    if(IS_SET(args.whatToDo, BMP_SOBEL))      bmpReader.sobelFilter(sobel);
     if(IS_SET(args.whatToDo, BMP_OUTPUT))     bmpReader.saveFile(args.fOutputPath);
 
     return(EXIT_SUCCESS);
