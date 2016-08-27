@@ -32,7 +32,7 @@ void help(void)
     printf("\t [-help] - Shows what you are reading\n");
 
     printf("\t [-toSobel] - Sobel filter for edge detection\n");
-    printf("\t\t floatThreshold: number of passes to do\n");
+    printf("\t\t floatThreshold: if it is 0 (zero) output fill not be filtered else it will use the value as a threshold\n");
 
     printf("\t [-toBlur] - Gausian Blur using a 3x3 kernel\n");
     printf("\t\t intPasses: Number of passes\n");
