@@ -264,10 +264,11 @@ void BMPReader::sobelFilter(float filter)
             int Gy = Gradient(mPixels, r, c, nWidth, GY);
 
             float v = sqrtf((float)(Gx * Gx + Gy * Gy)) ;
+            int p = (int)(v + 0.5f);
 
-            newImg[r * nWidth * 3 + c * 3 + 0] = filter >= 1.0f ? (v > filter ? 255 : 0) : CLAMP((int) (v + 0.5f));
-            newImg[r * nWidth * 3 + c * 3 + 1] = filter >= 1.0f ? (v > filter ? 255 : 0) : CLAMP((int) (v + 0.5f));
-            newImg[r * nWidth * 3 + c * 3 + 2] = filter >= 1.0f ? (v > filter ? 255 : 0) : CLAMP((int) (v + 0.5f));
+            newImg[r * nWidth * 3 + c * 3 + 0] = filter >= 1.0f ? (v > filter ? CLAMP(p) : 0) : CLAMP(p);
+            newImg[r * nWidth * 3 + c * 3 + 1] = filter >= 1.0f ? (v > filter ? CLAMP(p) : 0) : CLAMP(p);
+            newImg[r * nWidth * 3 + c * 3 + 2] = filter >= 1.0f ? (v > filter ? CLAMP(p) : 0) : CLAMP(p);
         }
     }
 
@@ -341,13 +342,15 @@ void BMPReader::blurFilter(int nPass, float sigma)
     };*/
 
     float kT = 0.0f;
+    int ModTwo = (nPass % 2);
+
     for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) kT += K[i][j];
     for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) K[i][j] /= kT;
 
     unsigned char *pBlurArr[2] =
     {
-        (nPass % 2) == 0 ? mPixels : newImg,
-        (nPass % 2) == 0 ? newImg : mPixels
+        ModTwo == 0 ? mPixels : newImg,
+        ModTwo == 0 ? newImg : mPixels
     };
 
     while (nPass > 0)
@@ -355,10 +358,11 @@ void BMPReader::blurFilter(int nPass, float sigma)
         size_t ReadFrom = (nPass - 0) % 2;
         size_t WriteTo = (nPass - 1) % 2;
         --nPass;
-
-        for (unsigned int r = 1; r < nHeight - 1; ++r)
+        
+        #pragma omp parallel for num_threads(8)
+        for (int r = 1; r < (int) nHeight - 1; ++r)
         {
-            for (unsigned int c = 1; c < nWidth - 1; ++c)
+            for (int c = 1; c < (int) nWidth - 1; ++c)
             {
                 int v0 = Blur(pBlurArr[ReadFrom] + 0, r, c, nWidth, K);
                 int v1 = Blur(pBlurArr[ReadFrom] + 1, r, c, nWidth, K);
@@ -368,11 +372,11 @@ void BMPReader::blurFilter(int nPass, float sigma)
                 pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 1] = CLAMP((int)v1);
                 pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 2] = CLAMP((int)v2);
 
-                if (c == 1) // NOTE(Andrie): Copy the same pixels from second column to first columns
+                if (c == 1) // NOTE(Andrei): Copy the same pixels from second column to first columns
                 {
-                    pBlurArr[WriteTo][r * nWidth * 3 + 0] = CLAMP((int)v0);
-                    pBlurArr[WriteTo][r * nWidth * 3 + 1] = CLAMP((int)v1);
-                    pBlurArr[WriteTo][r * nWidth * 3 + 2] = CLAMP((int)v2);
+                    pBlurArr[WriteTo][r * nWidth * 3 + (c - 1) * 3 + 0] = CLAMP((int)v0);
+                    pBlurArr[WriteTo][r * nWidth * 3 + (c - 1) * 3 + 1] = CLAMP((int)v1);
+                    pBlurArr[WriteTo][r * nWidth * 3 + (c - 1) * 3 + 2] = CLAMP((int)v2);
                 }
                 else if (c == (nWidth - 2)) // NOTE(Andrei): Copy to same pixels from next-to-last column to last column
                 {
@@ -381,7 +385,7 @@ void BMPReader::blurFilter(int nPass, float sigma)
                     pBlurArr[WriteTo][r * nWidth * 3 + (c + 1) * 3 + 2] = CLAMP((int)v2);
                 }
 
-                if (r == 1) // NOTE(Andrie): Copy the same pixels from second row to first row
+                if (r == 1) // NOTE(Andrei): Copy the same pixels from second row to first row
                 {
                     pBlurArr[WriteTo][(r - 1) * nWidth * 3 + c * 3 + 0] = CLAMP((int)v0);
                     pBlurArr[WriteTo][(r - 1) * nWidth * 3 + c * 3 + 1] = CLAMP((int)v1);
@@ -397,7 +401,8 @@ void BMPReader::blurFilter(int nPass, float sigma)
         }
     }
 
-    free(mPixels);
-    mPixels = newImg;
+    mPixels = pBlurArr[0];
+    free(pBlurArr[1]);
+
     printf("done\n");
 }
