@@ -256,9 +256,10 @@ void BMPReader::sobelFilter(float filter)
         { +1, +2, +1 },
     };
 
-    for(unsigned int r = 1; r < nHeight - 1; ++r)
+    #pragma omp parallel for num_threads(8)
+    for(int r = 1; r < (int) nHeight - 1; ++r)
     {
-        for(unsigned int c = 1; c < nWidth - 1; ++c)
+        for(int c = 1; c < (int) nWidth - 1; ++c)
         {
             int Gx = Gradient(mPixels, r, c, nWidth, GX);
             int Gy = Gradient(mPixels, r, c, nWidth, GY);
