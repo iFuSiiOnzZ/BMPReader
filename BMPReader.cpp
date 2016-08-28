@@ -285,7 +285,7 @@ static int Blur(unsigned char *pImage, unsigned int R, unsigned int C, unsigned 
 
     unsigned char * p11 = pImage + Width * (R + 0) * 3 + C * 3;
     unsigned char * p10 = p11 - 3;
-    unsigned char * p12 = p10 + 3;
+    unsigned char * p12 = p11 + 3;
 
     unsigned char * p21 = pImage + Width * (R + 1) * 3 + C * 3;
     unsigned char * p20 = p21 - 3;
