@@ -212,7 +212,7 @@ static int Gradient(unsigned char *pImage, unsigned int R, unsigned int C, unsig
 {
     unsigned char * p11 = pImage + Width * (R + 0) * 3 + C * 3;
     unsigned char * p10 = p11 - 3;
-    unsigned char * p12 = p10 + 3;
+    unsigned char * p12 = p11 + 3;
 
     unsigned char * p01 = pImage + Width * (R - 1) * 3 + C * 3;
     unsigned char * p00 = p01 - 3;
