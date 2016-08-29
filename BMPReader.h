@@ -38,18 +38,18 @@ class BMPReader
         BMPHeader      mBMPHeader;
 
     public:
-        BMPReader           (const std::string &);
-        ~BMPReader          (void);
+        BMPReader(const std::string &);
+        ~BMPReader(void);
 
-        void    setSize         (int, int);
-        void    setAngle        (float);
-        void    addBrightness   (int);
+        void    setSize(int, int);
+        void    setAngle(float);
+        void    addBrightness(int);
 
-        void    showHeader      (void);
-        void    toNegative	    (void);
-        void    toGray		    (void);
+        void    showHeader(void);
+        void    toNegative(void);
+        void    toGray(void);
 
-        void    saveFile	    (const std::string &);
-        void    blurFilter      (int, float);
-        void    sobelFilter     (float);
+        void    saveFile(const std::string &);
+        void    blurFilter(int, int);
+        void    sobelFilter(float);
 };

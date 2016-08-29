@@ -8,25 +8,25 @@ BMPReader::BMPReader(const std::string &fPath) : mPixels(NULL)
     FILE *pFile = NULL;
     memset(&mBMPHeader, 0, sizeof(BMPHeader));
 
-    if(fopen_s(&pFile, fPath.c_str(), "rb") != 0) return;
+    if (fopen_s(&pFile, fPath.c_str(), "rb") != 0) return;
     fread(&mBMPHeader, (size_t)1, (size_t) sizeof(BMPHeader), pFile);
 
-    if(mBMPHeader.mBitsXPixel != 24)
+    if (mBMPHeader.mBitsXPixel != 24)
     {
         fclose(pFile);
         exit(EXIT_FAILURE);
     }
 
     unsigned int mallocSize = mBMPHeader.mImgHeight * mBMPHeader.mImgWidth * 3;
-    mPixels = (unsigned char *) malloc (mallocSize * sizeof(unsigned char));
+    mPixels = (unsigned char *)malloc(mallocSize * sizeof(unsigned char));
 
     unsigned char pad[4] = { 0 };
     unsigned int padding = (4 - ((mBMPHeader.mImgWidth * 3) % 4)) % 4;
 
     fseek(pFile, mBMPHeader.mDataOffset, SEEK_SET);
-    for(unsigned int i = 0; i < mBMPHeader.mImgHeight; i++)
+    for (unsigned int i = 0; i < mBMPHeader.mImgHeight; i++)
     {
-        fread(mPixels + i * mBMPHeader.mImgWidth * 3, (size_t) 1, (size_t) mBMPHeader.mImgWidth * 3, pFile);
+        fread(mPixels + i * mBMPHeader.mImgWidth * 3, (size_t)1, (size_t)mBMPHeader.mImgWidth * 3, pFile);
         fread(&pad, 1, padding, pFile);
     }
 
@@ -44,13 +44,13 @@ BMPReader::~BMPReader(void)
 
 void BMPReader::showHeader(void)
 {
-    printf("Identifier: %d\n",mBMPHeader.mBMPType);
+    printf("Identifier: %d\n", mBMPHeader.mBMPType);
     printf("Padding: %d\n\n", 4 - mBMPHeader.mImgWidth * 3 % 4);
 
     printf("File size: %d\n", mBMPHeader.mFileSize);
     printf("Image size: %d\n\n", mBMPHeader.mImageSize);
 
-    printf("Header size: %d\n",mBMPHeader.mHeaderSize);
+    printf("Header size: %d\n", mBMPHeader.mHeaderSize);
     printf("Data offset: %d\n\n", mBMPHeader.mDataOffset);
 
     printf("Image width: %d\n", mBMPHeader.mImgWidth);
@@ -66,15 +66,15 @@ void BMPReader::saveFile(const std::string &fPath)
     printf("Writing file...\t");
     FILE *pFile = NULL;
 
-    if(fopen_s(&pFile, fPath.c_str(), "wb") != 0) return;
+    if (fopen_s(&pFile, fPath.c_str(), "wb") != 0) return;
     fwrite(&mBMPHeader, (size_t)1, (size_t) sizeof(BMPHeader), pFile);
 
     unsigned int padding = (4 - ((mBMPHeader.mImgWidth * 3) % 4)) % 4;
     fseek(pFile, mBMPHeader.mDataOffset, SEEK_SET);
 
-    for(unsigned int i = 0; i < mBMPHeader.mImgHeight; i++)
+    for (unsigned int i = 0; i < mBMPHeader.mImgHeight; i++)
     {
-        fwrite(mPixels + i * mBMPHeader.mImgWidth * 3, (size_t) mBMPHeader.mImgWidth * 3, (size_t) 1, pFile);
+        fwrite(mPixels + i * mBMPHeader.mImgWidth * 3, (size_t)mBMPHeader.mImgWidth * 3, (size_t)1, pFile);
         fwrite("\0", 1, padding, pFile);
     }
 
@@ -87,7 +87,7 @@ void BMPReader::addBrightness(int b)
     printf("Adding brightness...\t");
     unsigned int nPixels = mBMPHeader.mImgHeight * mBMPHeader.mImgWidth * 3;
 
-    for(unsigned char *p = mPixels; p < mPixels + nPixels; p += 3)
+    for (unsigned char *p = mPixels; p < mPixels + nPixels; p += 3)
     {
         *(p + 0) = CLAMP(*(p + 0) + b);
         *(p + 1) = CLAMP(*(p + 1) + b);
@@ -102,7 +102,7 @@ void BMPReader::toNegative(void)
     printf("Converting to negative...\t");
     unsigned int nPixels = mBMPHeader.mImgHeight * mBMPHeader.mImgWidth * 3;
 
-    for(unsigned char *p = mPixels; p < mPixels + nPixels; p += 3)
+    for (unsigned char *p = mPixels; p < mPixels + nPixels; p += 3)
     {
         *(p + 0) = 255 - *(p + 0);
         *(p + 1) = 255 - *(p + 1);
@@ -117,9 +117,9 @@ void BMPReader::toGray(void)
     printf("Converting to gray...\t");
     unsigned int nPixels = mBMPHeader.mImgHeight * mBMPHeader.mImgWidth * 3;
 
-    for(unsigned char *p = mPixels; p < mPixels + nPixels; p += 3)
+    for (unsigned char *p = mPixels; p < mPixels + nPixels; p += 3)
     {
-        unsigned char g = (unsigned char) (((*(p + 0)) * 0.3 + (*(p + 1)) * 0.59 + (*(p + 2)) * 0.11) + 0.5);
+        unsigned char g = (unsigned char)(((*(p + 0)) * 0.3 + (*(p + 1)) * 0.59 + (*(p + 2)) * 0.11) + 0.5);
         *(p + 0) = *(p + 1) = *(p + 2) = g;
     }
 
@@ -137,8 +137,8 @@ void BMPReader::setAngle(float angle)
     //float tx = mBMPHeader.mImgWidth / 2.0f;
     //float ty = mBMPHeader.mImgHeight / 2.0f;
 
-    int nWidth = (int) mBMPHeader.mImgWidth;
-    int nHeight = (int) mBMPHeader.mImgHeight;
+    int nWidth = (int)mBMPHeader.mImgWidth;
+    int nHeight = (int)mBMPHeader.mImgHeight;
 
     float tx = nWidth / 2.0f;
     float ty = nHeight / 2.0f;
@@ -146,15 +146,15 @@ void BMPReader::setAngle(float angle)
     unsigned int padding = (4 - ((nWidth * 3) % 4)) % 4;
     unsigned int mallocSize = nHeight * nWidth * 3 + padding * nWidth;
 
-    unsigned char *newImg = (unsigned char *) malloc (mallocSize * sizeof(unsigned char));
+    unsigned char *newImg = (unsigned char *)malloc(mallocSize * sizeof(unsigned char));
     memset(newImg, 0, mallocSize * sizeof(unsigned char));
 
-    for(int cy = 0; cy < nHeight; cy++) for(int cx = 0; cx < nWidth; cx++)
+    for (int cy = 0; cy < nHeight; cy++) for (int cx = 0; cx < nWidth; cx++)
     {
-        int x = (int) (((cx - tx) * cosf(-angle) - (cy - ty) * sinf(-angle)) + tx);
-        int y = (int) (((cx - tx) * sinf(-angle) + (cy - ty) * cosf(-angle)) + ty);
+        int x = (int)(((cx - tx) * cosf(-angle) - (cy - ty) * sinf(-angle)) + tx);
+        int y = (int)(((cx - tx) * sinf(-angle) + (cy - ty) * cosf(-angle)) + ty);
 
-        if(x < 0 || y < 0 || x >= (int) mBMPHeader.mImgWidth || y >= (int) mBMPHeader.mImgHeight) continue;
+        if (x < 0 || y < 0 || x >= (int)mBMPHeader.mImgWidth || y >= (int)mBMPHeader.mImgHeight) continue;
         int m = y * mBMPHeader.mImgWidth * 3 + x * 3;
         int p = cy * nWidth * 3 + cx * 3;
 
@@ -172,7 +172,7 @@ void BMPReader::setAngle(float angle)
     mBMPHeader.mImageSize = nWidth * nHeight * 3;
     mBMPHeader.mFileSize = sizeof(BMPHeader) + mallocSize;
 
-     printf("done!\n\n");
+    printf("done!\n\n");
 }
 
 void BMPReader::setSize(int nWidth, int nHeight)
@@ -181,15 +181,15 @@ void BMPReader::setSize(int nWidth, int nHeight)
 
     unsigned int padding = (4 - ((nWidth * 3) % 4)) % 4;
     unsigned int mallocSize = nHeight * nWidth * 3 + padding * nHeight;
-    unsigned char *newImg = (unsigned char *) malloc (mallocSize * sizeof(unsigned char));
+    unsigned char *newImg = (unsigned char *)malloc(mallocSize * sizeof(unsigned char));
 
-    float sy = (float) nHeight / (float) mBMPHeader.mImgHeight;
-    float sx = (float) nWidth / (float) mBMPHeader.mImgWidth;
+    float sy = (float)nHeight / (float)mBMPHeader.mImgHeight;
+    float sx = (float)nWidth / (float)mBMPHeader.mImgWidth;
 
-    for(int cy = 0; cy < nHeight; cy++) for(int cx = 0; cx < nWidth; cx++)
+    for (int cy = 0; cy < nHeight; cy++) for (int cx = 0; cx < nWidth; cx++)
     {
         int p = cy * nWidth * 3 + cx * 3;
-        int m = ((int) (cy / sy) * mBMPHeader.mImgWidth * 3) + ((int) (cx / sx) * 3);
+        int m = ((int)(cy / sy) * mBMPHeader.mImgWidth * 3) + ((int)(cx / sx) * 3);
 
         *(newImg + p + 0) = *(mPixels + m + 0);
         *(newImg + p + 1) = *(mPixels + m + 1);
@@ -202,8 +202,8 @@ void BMPReader::setSize(int nWidth, int nHeight)
     mBMPHeader.mImgWidth = nWidth;
     mBMPHeader.mImgHeight = nHeight;
 
-    mBMPHeader.mImageSize  = nWidth * nHeight * 3;
-    mBMPHeader.mFileSize   = sizeof(BMPHeader) + mallocSize;
+    mBMPHeader.mImageSize = nWidth * nHeight * 3;
+    mBMPHeader.mFileSize = sizeof(BMPHeader) + mallocSize;
 
     printf("Done!\n");
 }
@@ -239,7 +239,7 @@ void BMPReader::sobelFilter(float filter)
     unsigned int padding = (4 - ((nWidth * 3) % 4)) % 4;
     unsigned int mallocSize = nHeight * nWidth * 3 + padding * nHeight;
 
-    unsigned char *newImg = (unsigned char *) malloc (mallocSize * sizeof(unsigned char));
+    unsigned char *newImg = (unsigned char *)malloc(mallocSize * sizeof(unsigned char));
     memset(newImg, 0, mallocSize);
 
     int GX[3][3] =
@@ -256,15 +256,15 @@ void BMPReader::sobelFilter(float filter)
         { +1, +2, +1 },
     };
 
-    #pragma omp parallel for num_threads(8)
-    for(int r = 1; r < (int) nHeight - 1; ++r)
+#pragma omp parallel for num_threads(8)
+    for (int r = 1; r < (int)nHeight - 1; ++r)
     {
-        for(int c = 1; c < (int) nWidth - 1; ++c)
+        for (int c = 1; c < (int)nWidth - 1; ++c)
         {
             int Gx = Gradient(mPixels, r, c, nWidth, GX);
             int Gy = Gradient(mPixels, r, c, nWidth, GY);
 
-            float v = sqrtf((float)(Gx * Gx + Gy * Gy)) ;
+            float v = sqrtf((float)(Gx * Gx + Gy * Gy));
             int p = (int)(v + 0.5f);
 
             newImg[r * nWidth * 3 + c * 3 + 0] = filter >= 1.0f ? (v > filter ? CLAMP(p) : 0) : CLAMP(p);
@@ -278,26 +278,25 @@ void BMPReader::sobelFilter(float filter)
     printf("done\n");
 }
 
-static int Blur(unsigned char *pImage, unsigned int R, unsigned int C, unsigned int Width, float K[3][3])
+static int BlurWrapAround(unsigned char *pImage, int R, int C, int Width, int Height, int Ks, float *K)
 {
-    unsigned char * p01 = pImage + Width * (R - 1) * 3 + C * 3;
-    unsigned char * p00 = p01 - 3;
-    unsigned char * p02 = p01 + 3;
+    int Kr = Ks / 2;
+    float p = 0.0f;
 
-    unsigned char * p11 = pImage + Width * (R + 0) * 3 + C * 3;
-    unsigned char * p10 = p11 - 3;
-    unsigned char * p12 = p11 + 3;
+    for (int i = -Kr; i <= Kr; ++i)  for (int j = -Kr; j <= Kr; ++j)
+    {
+        int R1 = R + i, C1 = C + j;
 
-    unsigned char * p21 = pImage + Width * (R + 1) * 3 + C * 3;
-    unsigned char * p20 = p21 - 3;
-    unsigned char * p22 = p21 + 3;
+        if (R1 < 0) R1 = Height - 1 + R1;
+        if (R1 > Height - 1) R1 = i;
 
-    float p0 = *p00 * K[0][0] + *p01 * K[0][1] + *p02 * K[0][2];
-    float p1 = *p10 * K[1][0] + *p11 * K[1][1] + *p12 * K[1][2];
-    float p2 = *p20 * K[2][0] + *p21 * K[2][1] + *p22 * K[2][2];
+        if (C1 < 0) C1 = Width - 1 + C1;
+        if (C1 > Width - 1) C1 = j;
 
-    float p = p0 + p1 + p2;
-    return (int) (p + 0.5f);
+        p += *(pImage + Width * R1 * 3 + C1 * 3) * K[(i + Kr) * Ks + (j + Kr)];
+    }
+
+    return (int)(p + 0.5f);
 }
 
 static float Gaussian1D(int x, float s)
@@ -316,7 +315,24 @@ static float Gaussian2D(int x, int y, float s)
     return bse * expf(-exp);
 }
 
-void BMPReader::blurFilter(int nPass, float sigma)
+static void GenGaussianKernel(int Ks, float *K)
+{
+    float s = 0.0f, sg = Ks * 0.5f;
+    int Kr = Ks / 2;
+
+    for (int i = -Kr; i <= Kr; ++i) for (int j = -Kr; j <= Kr; ++j)
+    {
+        K[(i + Kr) * Ks + j + Kr] = Gaussian2D(i, Ks, sg) * Gaussian2D(j, Ks, sg);
+        s += K[(i + Kr) * Ks + j + Kr];
+    }
+
+    for (int i = 0; i < Ks; ++i) for (int j = 0; j < Ks; ++j)
+    {
+        K[i * Ks + j] /= s;
+    }
+}
+
+void BMPReader::blurFilter(int nPass, int Ks)
 {
     printf("Blur filter...\t");
     unsigned int nWidth = mBMPHeader.mImgWidth;
@@ -326,27 +342,16 @@ void BMPReader::blurFilter(int nPass, float sigma)
     unsigned int mallocSize = nHeight * nWidth * 3 + padding * nHeight;
 
     unsigned char *newImg = (unsigned char *)malloc(mallocSize * sizeof(unsigned char));
-    memcpy(newImg, mPixels, mallocSize * sizeof(unsigned char));
+    memset(newImg, 0, mallocSize * sizeof(unsigned char));
 
-    float K[3][3] =
-    {
-        { Gaussian2D(1, 1, sigma), Gaussian2D(1, 1, sigma), Gaussian2D(1, 1, sigma) },
-        { Gaussian2D(1, 1, sigma), Gaussian2D(2, 2, sigma), Gaussian2D(1, 1, sigma) },
-        { Gaussian2D(1, 1, sigma), Gaussian2D(1, 1, sigma), Gaussian2D(1, 1, sigma) },
-    };
+    if (Ks <= 1) Ks = 3;
+    if (Ks % 2 == 0) ++Ks;
 
-    /*float K[3][3] =
-    {
-        { Gaussin1D(1, sigma), Gaussin1D(1, sigma), Gaussin1D(1, sigma) },
-        { Gaussin1D(1, sigma), Gaussin1D(2, sigma), Gaussin1D(1, sigma) },
-        { Gaussin1D(1, sigma), Gaussin1D(1, sigma), Gaussin1D(1, sigma) },
-    };*/
+    float *K = (float *)malloc(sizeof(float) * (Ks * Ks));
+    GenGaussianKernel(Ks, K);
 
     float kT = 0.0f;
     int ModTwo = (nPass % 2);
-
-    for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) kT += K[i][j];
-    for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) K[i][j] /= kT;
 
     unsigned char *pBlurArr[2] =
     {
@@ -359,51 +364,26 @@ void BMPReader::blurFilter(int nPass, float sigma)
         size_t ReadFrom = (nPass - 0) % 2;
         size_t WriteTo = (nPass - 1) % 2;
         --nPass;
-        
-        #pragma omp parallel for num_threads(8)
-        for (int r = 1; r < (int) nHeight - 1; ++r)
+
+#pragma omp parallel for num_threads(8)
+        for (int r = 0; r < (int)nHeight; ++r)
         {
-            for (int c = 1; c < (int) nWidth - 1; ++c)
+            for (int c = 0; c < (int)nWidth; ++c)
             {
-                int v0 = Blur(pBlurArr[ReadFrom] + 0, r, c, nWidth, K);
-                int v1 = Blur(pBlurArr[ReadFrom] + 1, r, c, nWidth, K);
-                int v2 = Blur(pBlurArr[ReadFrom] + 2, r, c, nWidth, K);
+                int v0 = BlurWrapAround(pBlurArr[ReadFrom] + 0, r, c, nWidth, nHeight, Ks, K);
+                int v1 = BlurWrapAround(pBlurArr[ReadFrom] + 1, r, c, nWidth, nHeight, Ks, K);
+                int v2 = BlurWrapAround(pBlurArr[ReadFrom] + 2, r, c, nWidth, nHeight, Ks, K);
 
                 pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 0] = CLAMP((int)v0);
                 pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 1] = CLAMP((int)v1);
                 pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 2] = CLAMP((int)v2);
-
-                if (c == 1) // NOTE(Andrei): Copy the same pixels from second column to first columns
-                {
-                    pBlurArr[WriteTo][r * nWidth * 3 + (c - 1) * 3 + 0] = CLAMP((int)v0);
-                    pBlurArr[WriteTo][r * nWidth * 3 + (c - 1) * 3 + 1] = CLAMP((int)v1);
-                    pBlurArr[WriteTo][r * nWidth * 3 + (c - 1) * 3 + 2] = CLAMP((int)v2);
-                }
-                else if (c == (nWidth - 2)) // NOTE(Andrei): Copy to same pixels from next-to-last column to last column
-                {
-                    pBlurArr[WriteTo][r * nWidth * 3 + (c + 1) * 3 + 0] = CLAMP((int)v0);
-                    pBlurArr[WriteTo][r * nWidth * 3 + (c + 1) * 3 + 1] = CLAMP((int)v1);
-                    pBlurArr[WriteTo][r * nWidth * 3 + (c + 1) * 3 + 2] = CLAMP((int)v2);
-                }
-
-                if (r == 1) // NOTE(Andrei): Copy the same pixels from second row to first row
-                {
-                    pBlurArr[WriteTo][(r - 1) * nWidth * 3 + c * 3 + 0] = CLAMP((int)v0);
-                    pBlurArr[WriteTo][(r - 1) * nWidth * 3 + c * 3 + 1] = CLAMP((int)v1);
-                    pBlurArr[WriteTo][(r - 1) * nWidth * 3 + c * 3 + 2] = CLAMP((int)v2);
-                }
-                else if (r == (nHeight - 2)) // NOTE(Andrei): Copy to same pixels from next-to-last row to last row
-                {
-                    pBlurArr[WriteTo][(r + 1) * nWidth * 3 + c * 3 + 0] = CLAMP((int)v0);
-                    pBlurArr[WriteTo][(r + 1) * nWidth * 3 + c * 3 + 1] = CLAMP((int)v1);
-                    pBlurArr[WriteTo][(r + 1) * nWidth * 3 + c * 3 + 2] = CLAMP((int)v2);
-                }
             }
         }
     }
 
-    mPixels = pBlurArr[0];
     free(pBlurArr[1]);
+    free(K);
 
+    mPixels = pBlurArr[0];
     printf("done\n");
 }
