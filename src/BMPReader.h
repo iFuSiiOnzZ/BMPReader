@@ -43,7 +43,9 @@ class BMPReader
 
         void    setSize(int, int);
         void    setAngle(float);
+
         void    addBrightness(int);
+        void    gammaCorrection(float);
 
         void    showHeader(void);
         void    toNegative(void);

@@ -1,7 +1,10 @@
 #include "BMPReader.h"
 #include <stdio.h>
 
-#define CLAMP(x)  (((x) > (255)) ? (255) : (((x) < (0)) ? (0) : (x)))
+template <typename T> T CLAMP(T x)
+{
+    return x > 255 ? 255 : x < 0 ? 0 : x;
+}
 
 BMPReader::BMPReader(const std::string &fPath) : mPixels(NULL)
 {
@@ -92,6 +95,21 @@ void BMPReader::addBrightness(int b)
         *(p + 0) = CLAMP(*(p + 0) + b);
         *(p + 1) = CLAMP(*(p + 1) + b);
         *(p + 2) = CLAMP(*(p + 2) + b);
+    }
+
+    printf("done!\n");
+}
+
+void BMPReader::gammaCorrection(float gamma)
+{
+    printf("Gamma correction...\t");
+    unsigned int nPixels = mBMPHeader.mImgHeight * mBMPHeader.mImgWidth * 3;
+
+    for (unsigned char *p = mPixels; p < mPixels + nPixels; p += 3)
+    {
+        *(p + 0) = (unsigned char) CLAMP(pow(*(p + 0) / 255.0, (1.0 / gamma)) * 255.0); 
+        *(p + 1) = (unsigned char) CLAMP(pow(*(p + 1) / 255.0, (1.0 / gamma)) * 255.0);
+        *(p + 2) = (unsigned char) CLAMP(pow(*(p + 2) / 255.0, (1.0 / gamma)) * 255.0);
     }
 
     printf("done!\n");

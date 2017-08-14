@@ -10,6 +10,7 @@
 #define BMP_ANGLE       (1 << 6)
 #define BMP_SOBEL       (1 << 7)
 #define BMP_BLUR        (1 << 8)
+#define BMP_GAMMA       (1 << 9)
 
 #define SET_BIT(var, bit)   ((var) |= (bit))
 #define IS_SET(var, bit)    ((var) & (bit))
@@ -26,7 +27,7 @@ typedef struct args_t
 
 void help(void)
 {
-    printf("programName -i imputFile.bmp -o outFile.bmp [-rotate floatAngle] [-toBlur intPasses intKSize] [-toSobel floatThreshold] [-toGray] [-toNegative] [-showHeader] [-addBrightness intValue] [-resize intWidth intHeight] [-help]\n\n");
+    printf("programName -i imputFile.bmp -o outFile.bmp [-rotate floatAngle] [-toBlur intPasses intKSize] [-toSobel floatThreshold] [-toGray] [-toNegative] [-showHeader] [-addBrightness intValue] [-resize intWidth intHeight] [-gameCorrection floatGamma] [-help]\n\n");
     printf("\t [-help] - Shows what you are reading\n");
 
     printf("\t [-toSobel] - Sobel filter for edge detection\n");
@@ -50,6 +51,9 @@ void help(void)
 
     printf("\t [-addBrightness] - Change the brightness of the image\n");
     printf("\t\t intValue: increases the brightness by the input value\n");
+
+    printf("\t [-gammaCorrection] - Gamma correction\n");
+    printf("\t\t float: Codificate the luminance of the image\n");
 }
 
 int main(int argc, char *argv[])
@@ -65,6 +69,8 @@ int main(int argc, char *argv[])
 
     float sobel = 0.0f;
     float angle = 0.0f;
+
+    float gamma = 2.2f;
 
     for (int i = 1; i < argc; i++)
     {
@@ -83,6 +89,8 @@ int main(int argc, char *argv[])
 
         else if (!strcmp(argv[i], "-rotate")) { SET_BIT(args.whatToDo, BMP_ANGLE); angle = (float)atof(argv[i + 1]); }
         else if (!strcmp(argv[i], "-resize")) { SET_BIT(args.whatToDo, BMP_RESIZE); sx = atoi(argv[i + 1]); sy = atoi(argv[i + 2]); }
+
+        else if (!strcmp(argv[i], "-gammaCorrection")) { SET_BIT(args.whatToDo, BMP_GAMMA); gamma = atof(argv[i + 1]); }
     }
 
     if (!args.fInputPath.size())
@@ -104,6 +112,8 @@ int main(int argc, char *argv[])
 
     if (IS_SET(args.whatToDo, BMP_BLUR))       bmpReader.blurFilter(blur, ks);
     if (IS_SET(args.whatToDo, BMP_SOBEL))      bmpReader.sobelFilter(sobel);
+
+    if (IS_SET(args.whatToDo, BMP_GAMMA))      bmpReader.gammaCorrection(gamma);
     if (IS_SET(args.whatToDo, BMP_OUTPUT))     bmpReader.saveFile(args.fOutputPath);
 
     return(EXIT_SUCCESS);
