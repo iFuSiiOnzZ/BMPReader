@@ -25,4 +25,7 @@ SET CommonLinkerFlags= -incremental:no -opt:ref User32.lib Shell32.lib Ole32.lib
 SET Defines=-DX64
 
 :: Compile
+WHERE cl >nul 2>nul
+IF %ERRORLEVEL% NEQ 0 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64
+
 call cl %CommonCompilerFlags% %Defines% build.cpp /link %CommonLinkerFlags%

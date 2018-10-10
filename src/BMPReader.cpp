@@ -1,9 +1,9 @@
 #include "BMPReader.h"
 #include <stdio.h>
 
-template <typename T> T CLAMP(T x)
+template <typename inputType, typename outputType = inputType> outputType clamp(inputType min, inputType val, inputType max)
 {
-    return x > 255 ? 255 : x < 0 ? 0 : x;
+    return static_cast<outputType>(val > max ? max : val < min ? min : val);
 }
 
 BMPReader::BMPReader(const std::string &fPath) : mPixels(NULL)
@@ -92,9 +92,9 @@ void BMPReader::addBrightness(int b)
 
     for (unsigned char *p = mPixels; p < mPixels + nPixels; p += 3)
     {
-        *(p + 0) = CLAMP(*(p + 0) + b);
-        *(p + 1) = CLAMP(*(p + 1) + b);
-        *(p + 2) = CLAMP(*(p + 2) + b);
+        *(p + 0) = clamp<int, unsigned char>(0, *(p + 0) + b, 255);
+        *(p + 1) = clamp<int, unsigned char>(0, *(p + 1) + b, 255);
+        *(p + 2) = clamp<int, unsigned char>(0, *(p + 2) + b, 255);
     }
 
     printf("done!\n");
@@ -107,9 +107,9 @@ void BMPReader::gammaCorrection(float gamma)
 
     for (unsigned char *p = mPixels; p < mPixels + nPixels; p += 3)
     {
-        *(p + 0) = (unsigned char) CLAMP(pow(*(p + 0) / 255.0, (1.0 / gamma)) * 255.0); 
-        *(p + 1) = (unsigned char) CLAMP(pow(*(p + 1) / 255.0, (1.0 / gamma)) * 255.0);
-        *(p + 2) = (unsigned char) CLAMP(pow(*(p + 2) / 255.0, (1.0 / gamma)) * 255.0);
+        *(p + 0) = clamp<float, unsigned char>(0.0f, pow(*(p + 0) / 255.0f, (1.0f / gamma)) * 255.0f, 255.0f);
+        *(p + 1) = clamp<float, unsigned char>(0.0f, pow(*(p + 1) / 255.0f, (1.0f / gamma)) * 255.0f, 255.0f);
+        *(p + 2) = clamp<float, unsigned char>(0.0f, pow(*(p + 2) / 255.0f, (1.0f / gamma)) * 255.0f, 255.0f);
     }
 
     printf("done!\n");
@@ -274,7 +274,7 @@ void BMPReader::sobelFilter(float filter)
         { +1, +2, +1 },
     };
 
-#pragma omp parallel for num_threads(8)
+    #pragma omp parallel for num_threads(8)
     for (int r = 1; r < (int)nHeight - 1; ++r)
     {
         for (int c = 1; c < (int)nWidth - 1; ++c)
@@ -285,9 +285,9 @@ void BMPReader::sobelFilter(float filter)
             float v = sqrtf((float)(Gx * Gx + Gy * Gy));
             int p = (int)(v + 0.5f);
 
-            newImg[r * nWidth * 3 + c * 3 + 0] = filter >= 1.0f ? (v > filter ? CLAMP(p) : 0) : CLAMP(p);
-            newImg[r * nWidth * 3 + c * 3 + 1] = filter >= 1.0f ? (v > filter ? CLAMP(p) : 0) : CLAMP(p);
-            newImg[r * nWidth * 3 + c * 3 + 2] = filter >= 1.0f ? (v > filter ? CLAMP(p) : 0) : CLAMP(p);
+            newImg[r * nWidth * 3 + c * 3 + 0] = (filter >= 1.0f ? (v > filter ? clamp<int, unsigned char>(0, p, 255) : 0) : clamp<int, unsigned char>(0, p, 255));
+            newImg[r * nWidth * 3 + c * 3 + 1] = (filter >= 1.0f ? (v > filter ? clamp<int, unsigned char>(0, p, 255) : 0) : clamp<int, unsigned char>(0, p, 255));
+            newImg[r * nWidth * 3 + c * 3 + 2] = (filter >= 1.0f ? (v > filter ? clamp<int, unsigned char>(0, p, 255) : 0) : clamp<int, unsigned char>(0, p, 255));
         }
     }
 
@@ -383,7 +383,7 @@ void BMPReader::blurFilter(int nPass, int Ks)
         size_t WriteTo = (nPass - 1) % 2;
         --nPass;
 
-#pragma omp parallel for num_threads(8)
+        #pragma omp parallel for num_threads(8)
         for (int r = 0; r < (int)nHeight; ++r)
         {
             for (int c = 0; c < (int)nWidth; ++c)
@@ -392,9 +392,9 @@ void BMPReader::blurFilter(int nPass, int Ks)
                 int v1 = BlurWrapAround(pBlurArr[ReadFrom] + 1, r, c, nWidth, nHeight, Ks, K);
                 int v2 = BlurWrapAround(pBlurArr[ReadFrom] + 2, r, c, nWidth, nHeight, Ks, K);
 
-                pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 0] = CLAMP((int)v0);
-                pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 1] = CLAMP((int)v1);
-                pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 2] = CLAMP((int)v2);
+                pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 0] = clamp<int, unsigned char>(0, v0, 255);
+                pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 1] = clamp<int, unsigned char>(0, v1, 255);
+                pBlurArr[WriteTo][r * nWidth * 3 + c * 3 + 2] = clamp<int, unsigned char>(0, v2, 255);
             }
         }
     }
